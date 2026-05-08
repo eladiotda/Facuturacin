@@ -11,6 +11,7 @@ class Cliente(db.Model):
     correo = db.Column(db.String(120), nullable=False, unique=True)
     telefono = db.Column(db.String(20), nullable=True)
     direccion = db.Column(db.String(255), nullable=True)
+    facturas = db.relationship("Factura", back_populates="cliente", lazy=True)
     created_at = db.Column(
         db.DateTime,
         nullable=False,

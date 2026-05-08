@@ -11,6 +11,11 @@ class Producto(db.Model):
     nombre = db.Column(db.String(120), nullable=False, unique=True)
     precio = db.Column(db.Numeric(10, 2), nullable=False, default=Decimal("0.00"))
     stock = db.Column(db.Integer, nullable=False, default=0)
+    detalles_factura = db.relationship(
+        "DetalleFactura",
+        back_populates="producto",
+        lazy=True,
+    )
     created_at = db.Column(
         db.DateTime,
         nullable=False,
