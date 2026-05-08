@@ -69,7 +69,13 @@ export default function Clientes() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    setLoading(true)
+    getClientes()
+      .then(setClientes)
+      .catch(() => setError('No se pudieron cargar los clientes'))
+      .finally(() => setLoading(false))
+  }, [])
 
   const openCreate = () => { setSaveError(null); setModal({ mode: 'create', data: EMPTY }) }
   const openEdit   = (c) => { setSaveError(null); setModal({ mode: 'edit',   data: { nombre: c.nombre, correo: c.correo, telefono: c.telefono || '', direccion: c.direccion || '' }, id: c.id }) }

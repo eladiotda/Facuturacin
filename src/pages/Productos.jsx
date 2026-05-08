@@ -66,7 +66,13 @@ export default function Productos() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    setLoading(true)
+    getProductos()
+      .then(setProductos)
+      .catch(() => setError('No se pudieron cargar los productos'))
+      .finally(() => setLoading(false))
+  }, [])
 
   const openCreate = () => { setSaveError(null); setModal({ mode: 'create', data: EMPTY }) }
   const openEdit   = (p) => { setSaveError(null); setModal({ mode: 'edit', data: { nombre: p.nombre, precio: p.precio, stock: p.stock }, id: p.id }) }

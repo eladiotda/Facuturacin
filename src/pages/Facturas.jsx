@@ -239,7 +239,13 @@ export default function Facturas() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { loadAll() }, [])
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([getFacturas(), getClientes(), getProductos()])
+      .then(([f, c, p]) => { setFacturas(f); setClientes(c); setProductos(p) })
+      .catch(() => setError('No se pudieron cargar los datos'))
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleSaved = () => { setShowForm(false); loadAll() }
 
