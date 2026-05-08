@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from app.controllers.exceptions import ValidationError
+from app.controllers.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Cliente, DetalleFactura, Factura, Producto
 
@@ -57,7 +57,7 @@ class FacturaController:
 
         producto = db.session.get(Producto, producto_id)
         if producto is None:
-            raise ValidationError(f"El producto con id {producto_id} no existe")
+            raise NotFoundError(f"El producto con id {producto_id} no existe")
         if producto.stock < cantidad:
             raise ValidationError(
                 f"Stock insuficiente para el producto {producto.nombre}"
@@ -84,7 +84,7 @@ class FacturaController:
 
         cliente = db.session.get(Cliente, cliente_id)
         if cliente is None:
-            raise ValidationError(f"El cliente con id {cliente_id} no existe")
+            raise NotFoundError(f"El cliente con id {cliente_id} no existe")
 
         factura = Factura(numero=numero, cliente=cliente, total=Decimal("0.00"))
         db.session.add(factura)

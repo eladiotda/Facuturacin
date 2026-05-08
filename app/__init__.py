@@ -1,4 +1,8 @@
-from flask import Flask, jsonify
+from flask import Flask
+from werkzeug.exceptions import BadRequest
+
+from app.api.responses import error_response
+from app.controllers import ConflictError, NotFoundError, ValidationError
 
 from app.extensions import db, migrate
 from app.routes import clientes_bp, facturas_bp, productos_bp
@@ -39,10 +43,27 @@ def register_models() -> None:
 
 
 def register_error_handlers(app: Flask) -> None:
+    @app.errorhandler(BadRequest)
+    def bad_request(error):
+        return error_response("Solicitud invalida", 400)
+
+    @app.errorhandler(ValidationError)
+    def validation_error(error):
+        return error_response(str(error), 400)
+
+    @app.errorhandler(ConflictError)
+    def conflict_error(error):
+        return error_response(str(error), 409)
+
+    @app.errorhandler(NotFoundError)
+    def not_found_domain_error(error):
+        return error_response(str(error), 404)
+
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({"error": "Recurso no encontrado"}), 404
+        return error_response("Recurso no encontrado", 404)
 
     @app.errorhandler(500)
     def internal_error(error):
-        return jsonify({"error": "Error interno del servidor"}), 500
+        db.session.rollback()
+        return error_response("Error interno del servidor", 500)

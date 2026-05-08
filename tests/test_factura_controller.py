@@ -1,6 +1,12 @@
 import pytest
 
-from app.controllers import ClienteController, FacturaController, ProductoController, ValidationError
+from app.controllers import (
+    ClienteController,
+    FacturaController,
+    NotFoundError,
+    ProductoController,
+    ValidationError,
+)
 
 
 def test_create_factura_creates_details_and_total(app_context):
@@ -33,7 +39,7 @@ def test_create_factura_creates_details_and_total(app_context):
 
 
 def test_create_factura_rejects_missing_cliente(app_context):
-    with pytest.raises(ValidationError):
+    with pytest.raises(NotFoundError):
         FacturaController.create_factura(
             {
                 "numero": "FAC-001",
@@ -48,7 +54,7 @@ def test_create_factura_rejects_missing_producto(app_context):
         {"nombre": "Eladio", "correo": "eladio@example.com"}
     )
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(NotFoundError):
         FacturaController.create_factura(
             {
                 "numero": "FAC-001",

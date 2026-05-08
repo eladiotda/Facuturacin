@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
-from app.controllers import FacturaController, ValidationError
+from app.api.responses import error_response, success_response
+from app.controllers import FacturaController
 
 
 facturas_bp = Blueprint("facturas", __name__, url_prefix="/api/v1/facturas")
@@ -38,24 +39,21 @@ def serialize_factura(factura) -> dict:
 @facturas_bp.get("")
 def list_facturas():
     facturas = FacturaController.list_facturas()
-    return jsonify([serialize_factura(factura) for factura in facturas]), 200
+    return success_response([serialize_factura(factura) for factura in facturas], 200)
 
 
 @facturas_bp.get("/<int:factura_id>")
 def get_factura(factura_id: int):
     factura = FacturaController.get_factura(factura_id)
     if factura is None:
-        return jsonify({"error": "Factura no encontrada"}), 404
+        return error_response("Factura no encontrada", 404)
 
-    return jsonify(serialize_factura(factura)), 200
+    return success_response(serialize_factura(factura), 200)
 
 
 @facturas_bp.post("")
 def create_factura():
-    data = request.get_json(silent=True) or {}
-    try:
-        factura = FacturaController.create_factura(data)
-    except ValidationError as error:
-        return jsonify({"error": str(error)}), 400
+    data = request.get_json() or {}
+    factura = FacturaController.create_factura(data)
 
-    return jsonify(serialize_factura(factura)), 201
+    return success_response(serialize_factura(factura), 201)
