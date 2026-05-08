@@ -2,10 +2,6 @@ import os
 from urllib.parse import quote_plus
 
 
-def build_sqlite_uri() -> str:
-    return os.getenv("SQLITE_DATABASE_URI", "sqlite:///facturacion.db")
-
-
 def build_sql_server_query_params() -> str:
     params = {
         "driver": os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server"),
@@ -48,13 +44,7 @@ def build_database_uri() -> str:
     if database_url:
         return database_url
 
-    db_engine = os.getenv("DB_ENGINE", "sqlite").lower()
-    if db_engine == "sqlite":
-        return build_sqlite_uri()
-    if db_engine == "sqlserver":
-        return build_sql_server_uri()
-
-    raise ValueError(f"DB_ENGINE no soportado: {db_engine}")
+    return build_sql_server_uri()
 
 
 class BaseConfig:
@@ -71,7 +61,7 @@ class DevelopmentConfig(BaseConfig):
 
 class TestingConfig(BaseConfig):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = build_sql_server_uri()
 
 
 class ProductionConfig(BaseConfig):

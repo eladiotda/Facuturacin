@@ -2,20 +2,13 @@ from config.settings import (
     build_database_uri,
     build_sql_server_query_params,
     build_sql_server_uri,
-    build_sqlite_uri,
 )
 
 
 def test_build_database_uri_uses_database_url(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", "sqlite:///test.db")
+    monkeypatch.setenv("DATABASE_URL", "mssql+pyodbc://user:pass@host/db")
 
-    assert build_database_uri() == "sqlite:///test.db"
-
-
-def test_build_sqlite_uri_uses_sqlite_database_uri(monkeypatch):
-    monkeypatch.setenv("SQLITE_DATABASE_URI", "sqlite:///mi_app.db")
-
-    assert build_sqlite_uri() == "sqlite:///mi_app.db"
+    assert build_database_uri() == "mssql+pyodbc://user:pass@host/db"
 
 
 def test_build_sql_server_uri_builds_sql_server_connection(monkeypatch):
@@ -30,14 +23,6 @@ def test_build_sql_server_uri_builds_sql_server_connection(monkeypatch):
 
     assert connection_uri.startswith("mssql+pyodbc://sa:Password123%21@192.168.1.10:1433/facturacion")
     assert "driver=ODBC+Driver+17+for+SQL+Server" in connection_uri
-
-
-def test_build_database_uri_supports_sqlite_engine(monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setenv("DB_ENGINE", "sqlite")
-    monkeypatch.setenv("SQLITE_DATABASE_URI", "sqlite:///dev.db")
-
-    assert build_database_uri() == "sqlite:///dev.db"
 
 
 def test_build_database_uri_supports_sqlserver_engine(monkeypatch):
