@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from app.controllers import ClienteController
+from app.controllers import ClienteController, ConflictError, ValidationError
 
 
 clientes_bp = Blueprint("clientes", __name__, url_prefix="/api/v1/clientes")
@@ -36,7 +36,13 @@ def get_cliente(cliente_id: int):
 @clientes_bp.post("")
 def create_cliente():
     data = request.get_json(silent=True) or {}
-    cliente = ClienteController.create_cliente(data)
+    try:
+        cliente = ClienteController.create_cliente(data)
+    except ValidationError as error:
+        return jsonify({"error": str(error)}), 400
+    except ConflictError as error:
+        return jsonify({"error": str(error)}), 409
+
     return jsonify(serialize_cliente(cliente)), 201
 
 
@@ -47,7 +53,13 @@ def update_cliente(cliente_id: int):
         return jsonify({"error": "Cliente no encontrado"}), 404
 
     data = request.get_json(silent=True) or {}
-    updated_cliente = ClienteController.update_cliente(cliente, data)
+    try:
+        updated_cliente = ClienteController.update_cliente(cliente, data)
+    except ValidationError as error:
+        return jsonify({"error": str(error)}), 400
+    except ConflictError as error:
+        return jsonify({"error": str(error)}), 409
+
     return jsonify(serialize_cliente(updated_cliente)), 200
 
 

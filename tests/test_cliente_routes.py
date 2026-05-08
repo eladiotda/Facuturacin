@@ -65,3 +65,44 @@ def test_delete_cliente_removes_resource(client):
     assert delete_response.status_code == 200
     assert delete_response.get_json()["message"] == "Cliente eliminado correctamente"
     assert get_response.status_code == 404
+
+
+def test_create_cliente_rejects_missing_required_fields(client):
+    response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "", "correo": ""},
+    )
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_create_cliente_rejects_duplicate_correo(client):
+    client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Ana", "correo": "ana@example.com"},
+    )
+
+    response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Ana 2", "correo": "ana@example.com"},
+    )
+
+    assert response.status_code == 409
+    assert response.get_json()["error"] == "Ya existe un cliente con ese correo"
+
+
+def test_update_cliente_rejects_invalid_correo(client):
+    created_response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Ana", "correo": "ana@example.com"},
+    )
+    cliente_id = created_response.get_json()["id"]
+
+    response = client.put(
+        f"/api/v1/clientes/{cliente_id}",
+        json={"correo": "correo-invalido"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "El correo no tiene un formato valido"

@@ -1,4 +1,6 @@
-from app.controllers import ClienteController
+import pytest
+
+from app.controllers import ClienteController, ConflictError, ValidationError
 
 
 def test_create_and_get_cliente(app_context):
@@ -55,3 +57,19 @@ def test_delete_cliente_removes_record(app_context):
     ClienteController.delete_cliente(cliente)
 
     assert ClienteController.get_cliente(cliente.id) is None
+
+
+def test_create_cliente_requires_nombre_and_correo(app_context):
+    with pytest.raises(ValidationError):
+        ClienteController.create_cliente({"nombre": "   "})
+
+
+def test_create_cliente_rejects_duplicate_correo(app_context):
+    ClienteController.create_cliente(
+        {"nombre": "Ana", "correo": "ana@example.com"}
+    )
+
+    with pytest.raises(ConflictError):
+        ClienteController.create_cliente(
+            {"nombre": "Ana 2", "correo": "ana@example.com"}
+        )
