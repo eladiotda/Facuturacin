@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 
 from app.extensions import db, migrate
+from app.routes import clientes_bp
 from config.settings import config_by_name
 
 
@@ -24,7 +25,9 @@ def register_extensions(app: Flask) -> None:
 
 
 def register_blueprints(app: Flask) -> None:
-    """Hook para registrar rutas o blueprints futuros."""
+    """Registra blueprints de la API."""
+
+    app.register_blueprint(clientes_bp)
 
 
 def register_models() -> None:
