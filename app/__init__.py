@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 
+from app.extensions import db, migrate
 from config.settings import config_by_name
 
 
@@ -15,7 +16,10 @@ def create_app(config_name: str = "development") -> Flask:
 
 
 def register_extensions(app: Flask) -> None:
-    """Hook para extensiones futuras como ORM y migraciones."""
+    """Inicializa ORM y migraciones para la aplicacion."""
+
+    db.init_app(app)
+    migrate.init_app(app, db)
 
 
 def register_blueprints(app: Flask) -> None:
