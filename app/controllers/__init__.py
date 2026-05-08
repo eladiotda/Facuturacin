@@ -2,5 +2,11 @@
 
 from app.controllers.cliente_controller import ClienteController
 from app.controllers.exceptions import ConflictError, ValidationError
+from app.controllers.producto_controller import ProductoController
 
-__all__ = ["ClienteController", "ConflictError", "ValidationError"]
+__all__ = [
+    "ClienteController",
+    "ConflictError",
+    "ProductoController",
+    "ValidationError",
+]
