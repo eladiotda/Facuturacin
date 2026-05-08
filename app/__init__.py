@@ -9,6 +9,7 @@ def create_app(config_name: str = "development") -> Flask:
     app.config.from_object(config_by_name[config_name])
 
     register_extensions(app)
+    register_models()
     register_blueprints(app)
     register_error_handlers(app)
 
@@ -24,6 +25,12 @@ def register_extensions(app: Flask) -> None:
 
 def register_blueprints(app: Flask) -> None:
     """Hook para registrar rutas o blueprints futuros."""
+
+
+def register_models() -> None:
+    """Importa modelos para registrarlos en el metadata del ORM."""
+
+    from app import models  # noqa: F401
 
 
 def register_error_handlers(app: Flask) -> None:
