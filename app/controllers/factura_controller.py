@@ -33,7 +33,7 @@ class FacturaController:
         return numero, cliente_id, detalles
 
     @staticmethod
-    def _validate_detail(detail: dict) -> tuple[Producto, int, Decimal]:
+    def _validate_detail(detail: dict) -> tuple[int, Producto, int, Decimal]:
         producto_id = detail.get("producto_id")
         cantidad = detail.get("cantidad")
 
@@ -64,7 +64,7 @@ class FacturaController:
             )
 
         precio_unitario = producto.precio.quantize(Decimal("0.01"))
-        return producto, cantidad, precio_unitario
+        return producto_id, producto, cantidad, precio_unitario
 
     @staticmethod
     def list_facturas() -> list[Factura]:
@@ -89,9 +89,16 @@ class FacturaController:
         factura = Factura(numero=numero, cliente=cliente, total=Decimal("0.00"))
         db.session.add(factura)
         total = Decimal("0.00")
+        used_product_ids: set[int] = set()
 
         for detail in detalles_payload:
-            producto, cantidad, precio_unitario = FacturaController._validate_detail(detail)
+            producto_id, producto, cantidad, precio_unitario = FacturaController._validate_detail(detail)
+            if producto_id in used_product_ids:
+                raise ValidationError(
+                    f"El producto con id {producto_id} no puede repetirse en la factura"
+                )
+            used_product_ids.add(producto_id)
+
             subtotal = (precio_unitario * cantidad).quantize(Decimal("0.01"))
 
             factura.detalles.append(

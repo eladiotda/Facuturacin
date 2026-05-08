@@ -100,3 +100,57 @@ def test_create_factura_rejects_duplicate_numero(app_context):
                 "detalles": [{"producto_id": producto.id, "cantidad": 1}],
             }
         )
+
+
+def test_create_factura_rejects_empty_detalles(app_context):
+    cliente = ClienteController.create_cliente(
+        {"nombre": "Eladio", "correo": "eladio@example.com"}
+    )
+
+    with pytest.raises(ValidationError):
+        FacturaController.create_factura(
+            {
+                "numero": "FAC-001",
+                "cliente_id": cliente.id,
+                "detalles": [],
+            }
+        )
+
+
+def test_create_factura_rejects_duplicate_producto_in_detalles(app_context):
+    cliente = ClienteController.create_cliente(
+        {"nombre": "Eladio", "correo": "eladio@example.com"}
+    )
+    producto = ProductoController.create_producto(
+        {"nombre": "Arroz", "precio": "10000.00", "stock": 5}
+    )
+
+    with pytest.raises(ValidationError):
+        FacturaController.create_factura(
+            {
+                "numero": "FAC-001",
+                "cliente_id": cliente.id,
+                "detalles": [
+                    {"producto_id": producto.id, "cantidad": 1},
+                    {"producto_id": producto.id, "cantidad": 1},
+                ],
+            }
+        )
+
+
+def test_create_factura_rejects_invalid_cantidad(app_context):
+    cliente = ClienteController.create_cliente(
+        {"nombre": "Eladio", "correo": "eladio@example.com"}
+    )
+    producto = ProductoController.create_producto(
+        {"nombre": "Arroz", "precio": "10000.00", "stock": 5}
+    )
+
+    with pytest.raises(ValidationError):
+        FacturaController.create_factura(
+            {
+                "numero": "FAC-001",
+                "cliente_id": cliente.id,
+                "detalles": [{"producto_id": producto.id, "cantidad": 0}],
+            }
+        )

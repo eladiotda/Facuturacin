@@ -98,3 +98,93 @@ def test_create_factura_rejects_insufficient_stock(client):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "Stock insuficiente para el producto Aceite"
+
+
+def test_create_factura_rejects_duplicate_numero(client):
+    cliente_response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Eladio", "correo": "eladio@example.com"},
+    )
+    producto_response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Arroz", "precio": "10000.00", "stock": 5},
+    )
+
+    client.post(
+        "/api/v1/facturas",
+        json={
+            "numero": "FAC-001",
+            "cliente_id": cliente_response.get_json()["id"],
+            "detalles": [
+                {"producto_id": producto_response.get_json()["id"], "cantidad": 1}
+            ],
+        },
+    )
+
+    response = client.post(
+        "/api/v1/facturas",
+        json={
+            "numero": "FAC-001",
+            "cliente_id": cliente_response.get_json()["id"],
+            "detalles": [
+                {"producto_id": producto_response.get_json()["id"], "cantidad": 1}
+            ],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "Ya existe una factura con ese numero"
+
+
+def test_create_factura_rejects_duplicate_producto_in_detalles(client):
+    cliente_response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Eladio", "correo": "eladio@example.com"},
+    )
+    producto_response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Arroz", "precio": "10000.00", "stock": 5},
+    )
+
+    response = client.post(
+        "/api/v1/facturas",
+        json={
+            "numero": "FAC-010",
+            "cliente_id": cliente_response.get_json()["id"],
+            "detalles": [
+                {"producto_id": producto_response.get_json()["id"], "cantidad": 1},
+                {"producto_id": producto_response.get_json()["id"], "cantidad": 1},
+            ],
+        },
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.get_json()["error"]
+        == f"El producto con id {producto_response.get_json()['id']} no puede repetirse en la factura"
+    )
+
+
+def test_create_factura_rejects_invalid_cantidad(client):
+    cliente_response = client.post(
+        "/api/v1/clientes",
+        json={"nombre": "Eladio", "correo": "eladio@example.com"},
+    )
+    producto_response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Cafe", "precio": "8000.00", "stock": 4},
+    )
+
+    response = client.post(
+        "/api/v1/facturas",
+        json={
+            "numero": "FAC-011",
+            "cliente_id": cliente_response.get_json()["id"],
+            "detalles": [
+                {"producto_id": producto_response.get_json()["id"], "cantidad": 0}
+            ],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "La cantidad debe ser mayor que cero"
