@@ -3,6 +3,25 @@ from flask import Blueprint, request
 from app.api.responses import error_response, message_response, success_response
 from app.controllers import ClienteController
 
+"""
+Rutas de Clientes
+
+Endpoints:
+- GET  /api/v1/clientes                 -> Lista todos los clientes.
+- GET  /api/v1/clientes/<cliente_id>    -> Obtiene un cliente por id.
+- POST /api/v1/clientes                 -> Crea un nuevo cliente. JSON body ejemplo:
+    {"nombre": "Juan", "correo": "a@b.com", "telefono": "123", "direccion": "..."}
+- PUT  /api/v1/clientes/<cliente_id>    -> Actualiza un cliente existente. Envía los campos a actualizar en JSON.
+- DELETE /api/v1/clientes/<cliente_id> -> Elimina un cliente.
+
+Respuestas (uso general):
+- `success_response(data, status)` devuelve JSON con `data` y código HTTP.
+- `error_response(msg, status)` devuelve error con mensaje y código.
+- `message_response(msg, status)` devuelve mensaje simple.
+
+Uso: estas rutas usan `ClienteController` para la lógica de negocio y devuelven datos serializados.
+"""
+
 
 clientes_bp = Blueprint("clientes", __name__, url_prefix="/api/v1/clientes")
 
@@ -21,12 +40,20 @@ def serialize_cliente(cliente) -> dict:
 
 @clientes_bp.get("")
 def list_clientes():
+    """GET /api/v1/clientes - Lista clientes.
+
+    Response: 200 + lista de clientes.
+    """
     clientes = ClienteController.list_clientes()
     return success_response([serialize_cliente(cliente) for cliente in clientes], 200)
 
 
 @clientes_bp.get("/<int:cliente_id>")
 def get_cliente(cliente_id: int):
+    """GET /api/v1/clientes/<id> - Obtener cliente por id.
+
+    Response: 200 + cliente | 404 si no existe.
+    """
     cliente = ClienteController.get_cliente(cliente_id)
     if cliente is None:
         return error_response("Cliente no encontrado", 404)
@@ -36,6 +63,10 @@ def get_cliente(cliente_id: int):
 
 @clientes_bp.post("")
 def create_cliente():
+    """POST /api/v1/clientes - Crear cliente.
+
+    Body JSON: campos del cliente. Response: 201 + cliente creado.
+    """
     data = request.get_json() or {}
     cliente = ClienteController.create_cliente(data)
 
@@ -44,6 +75,10 @@ def create_cliente():
 
 @clientes_bp.put("/<int:cliente_id>")
 def update_cliente(cliente_id: int):
+    """PUT /api/v1/clientes/<id> - Actualizar cliente.
+
+    Body JSON: campos a actualizar. Response: 200 + cliente actualizado.
+    """
     cliente = ClienteController.get_cliente(cliente_id)
     if cliente is None:
         return error_response("Cliente no encontrado", 404)
@@ -56,6 +91,10 @@ def update_cliente(cliente_id: int):
 
 @clientes_bp.delete("/<int:cliente_id>")
 def delete_cliente(cliente_id: int):
+    """DELETE /api/v1/clientes/<id> - Eliminar cliente.
+
+    Response: 200 + mensaje de confirmación.
+    """
     cliente = ClienteController.get_cliente(cliente_id)
     if cliente is None:
         return error_response("Cliente no encontrado", 404)

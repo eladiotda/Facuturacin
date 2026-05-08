@@ -4,6 +4,24 @@ from app.api.responses import error_response, success_response
 from app.controllers import FacturaController
 
 
+"""
+Rutas de Facturas
+
+Endpoints:
+- GET  /api/v1/facturas              -> Lista todas las facturas.
+- GET  /api/v1/facturas/<factura_id> -> Obtiene una factura por id.
+- POST /api/v1/facturas              -> Crea una factura. Body JSON esperado:
+     {
+         "cliente_id": 1,
+         "detalles": [{"producto_id": 2, "cantidad": 3, "precio_unitario": "10.00"}, ...]
+     }
+
+Respuestas:
+- 200 con datos (lista o elemento), 201 en creación, 404 si no existe.
+
+Uso: `FacturaController` gestiona la lógica y validaciones; la serialización incluye cliente y detalles.
+"""
+
 facturas_bp = Blueprint("facturas", __name__, url_prefix="/api/v1/facturas")
 
 
@@ -38,12 +56,20 @@ def serialize_factura(factura) -> dict:
 
 @facturas_bp.get("")
 def list_facturas():
+    """GET /api/v1/facturas - Lista facturas.
+
+    Response: 200 + lista de facturas serializadas.
+    """
     facturas = FacturaController.list_facturas()
     return success_response([serialize_factura(factura) for factura in facturas], 200)
 
 
 @facturas_bp.get("/<int:factura_id>")
 def get_factura(factura_id: int):
+    """GET /api/v1/facturas/<id> - Obtener factura por id.
+
+    Response: 200 + factura o 404 si no existe.
+    """
     factura = FacturaController.get_factura(factura_id)
     if factura is None:
         return error_response("Factura no encontrada", 404)
@@ -53,6 +79,11 @@ def get_factura(factura_id: int):
 
 @facturas_bp.post("")
 def create_factura():
+    """POST /api/v1/facturas - Crear factura.
+
+    Body JSON: debe incluir `cliente_id` y `detalles`.
+    Response: 201 + factura creada.
+    """
     data = request.get_json() or {}
     factura = FacturaController.create_factura(data)
 
