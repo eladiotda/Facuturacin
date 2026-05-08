@@ -73,6 +73,16 @@ def test_create_producto_rejects_missing_required_fields(client):
     assert "error" in response.get_json()
 
 
+def test_create_producto_rejects_empty_precio_and_stock(client):
+    response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Arroz", "precio": "", "stock": ""},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "El precio es obligatorio"
+
+
 def test_create_producto_rejects_duplicate_nombre(client):
     client.post(
         "/api/v1/productos",
@@ -102,3 +112,39 @@ def test_update_producto_rejects_invalid_precio(client):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "El precio no puede ser negativo"
+
+
+def test_update_producto_rejects_duplicate_nombre(client):
+    client.post(
+        "/api/v1/productos",
+        json={"nombre": "Arroz", "precio": 12000, "stock": 5},
+    )
+    created_response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Aceite", "precio": 13000, "stock": 7},
+    )
+    producto_id = created_response.get_json()["id"]
+
+    response = client.put(
+        f"/api/v1/productos/{producto_id}",
+        json={"nombre": "Arroz"},
+    )
+
+    assert response.status_code == 409
+    assert response.get_json()["error"] == "Ya existe un producto con ese nombre"
+
+
+def test_update_producto_rejects_invalid_stock(client):
+    created_response = client.post(
+        "/api/v1/productos",
+        json={"nombre": "Harina", "precio": 3000, "stock": 11},
+    )
+    producto_id = created_response.get_json()["id"]
+
+    response = client.put(
+        f"/api/v1/productos/{producto_id}",
+        json={"stock": "abc"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "El stock debe ser un numero entero"

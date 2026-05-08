@@ -80,3 +80,24 @@ def test_create_producto_rejects_negative_values(app_context):
         ProductoController.create_producto(
             {"nombre": "Aceite", "precio": 100, "stock": -1}
         )
+
+
+def test_update_producto_rejects_empty_nombre(app_context):
+    producto = ProductoController.create_producto(
+        {"nombre": "Arroz", "precio": 10000, "stock": 5}
+    )
+
+    with pytest.raises(ValidationError):
+        ProductoController.update_producto(producto, {"nombre": "   "})
+
+
+def test_update_producto_rejects_duplicate_nombre(app_context):
+    producto_1 = ProductoController.create_producto(
+        {"nombre": "Arroz", "precio": 10000, "stock": 5}
+    )
+    ProductoController.create_producto(
+        {"nombre": "Aceite", "precio": 20000, "stock": 3}
+    )
+
+    with pytest.raises(ConflictError):
+        ProductoController.update_producto(producto_1, {"nombre": "Aceite"})

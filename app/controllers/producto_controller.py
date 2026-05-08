@@ -14,6 +14,9 @@ class ProductoController:
 
     @staticmethod
     def _parse_precio(value) -> Decimal:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            raise ValidationError("El precio es obligatorio")
+
         try:
             precio = Decimal(str(value))
         except (InvalidOperation, TypeError, ValueError):
@@ -26,6 +29,9 @@ class ProductoController:
 
     @staticmethod
     def _parse_stock(value) -> int:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            raise ValidationError("El stock es obligatorio")
+
         try:
             stock = int(value)
         except (TypeError, ValueError):
