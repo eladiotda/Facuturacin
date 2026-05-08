@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 
 from app.extensions import db, migrate
-from app.routes import clientes_bp
+from app.routes import clientes_bp, productos_bp
 from config.settings import config_by_name
 
 
@@ -28,6 +28,7 @@ def register_blueprints(app: Flask) -> None:
     """Registra blueprints de la API."""
 
     app.register_blueprint(clientes_bp)
+    app.register_blueprint(productos_bp)
 
 
 def register_models() -> None:
